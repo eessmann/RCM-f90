@@ -1,7 +1,7 @@
-!!!! kinds.f90
+!!!! rcm_kinds.f90
 !!
 !! Defines the kinds used in RCM.f90
-module kinds
+module rcm_kinds
 
   public
 

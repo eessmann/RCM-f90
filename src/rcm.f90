@@ -1,6 +1,6 @@
 module rcm_mod
 
-  use kinds, only: rcm_int, rcm_real
+  use rcm_kinds, only: rcm_int, rcm_real
 
   public
 
