@@ -1,5 +1,5 @@
 # Set up build type
-function(configure_build_type)
+function(rcm_configure_build_type)
 
     set(_build_types "Release;Debug")
     set(_default_build_type "Release")
@@ -19,30 +19,40 @@ function(configure_build_type)
         endif()
     endif()
 
-endfunction(configure_build_type)
+endfunction(rcm_configure_build_type)
 
 
 # Copy user configured compiler flags into global compiler flags
-macro(configure_compiler_flags)
+macro(rcm_configure_compiler_flags)
+    include(${CMAKE_SOURCE_DIR}/cmake/compilers/gnu_flags.cmake)
+    include(${CMAKE_SOURCE_DIR}/cmake/compilers/cray_flags.cmake)
 
-    set(_languages "Fortran")
+    add_library(rcm_project_warnings INTERFACE)
+    add_library(rcm_project_options INTERFACE)
 
-    if(CMAKE_BUILD_TYPE)
-        set(_buildtypes ${CMAKE_BUILD_TYPE})
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+        message("GNU fortran compiler!")
+        gnu_fortran_flags()
+        target_compile_options(rcm_project_warnings 
+            INTERFACE # Fortran warnings
+            $<$<COMPILE_LANGUAGE:Fortran>:${gnu_warning_flags}>)
+        target_compile_options(rcm_project_options 
+            INTERFACE 
+            $<$<COMPILE_LANGUAGE:Fortran>:${gnu_build_flags}>)
+    elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "CrayClang" OR CMAKE_Fortran_COMPILER_ID STREQUAL "Cray")
+        cray_fortran_flags()
+        target_compile_options(rcm_project_warnings 
+        INTERFACE # Fortran warnings
+            $<$<COMPILE_LANGUAGE:Fortran>:${cray_warning_flags}>)
+        target_compile_options(rcm_project_options 
+        INTERFACE
+            $<$<COMPILE_LANGUAGE:Fortran>:${cray_build_flags}>)
     else()
-        set(_buildtypes ${CMAKE_CONFIGURATION_TYPES})
     endif()
-    foreach(_buildtype IN LISTS _buildtypes)
-        foreach (lang IN LISTS _languages)
-            string(TOUPPER "${_buildtype}" _buildtype_upper)
-            set(CMAKE_${lang}_FLAGS " ${${lang}_FLAGS}")
-            set(CMAKE_${lang}_FLAGS_${_buildtype_upper} " ${${lang}_FLAGS_${_buildtype_upper}}")
-            message(STATUS "Flags for ${lang}-compiler (build type: ${_buildtype}): "
-                "${CMAKE_${lang}_FLAGS} ${CMAKE_${lang}_FLAGS_${_buildtype_upper}}")
-        endforeach()
-    endforeach()
-    unset(_buildtypes)
-    unset(_buildtype)
-    unset(_buildtype_upper)
 
-endmacro(configure_compiler_flags)
+    unset(gnu_warning_flags)
+    unset(gnu_build_flags)
+    unset(cray_warning_flags)
+    unset(cray_build_flags)
+
+endmacro(rcm_configure_compiler_flags)

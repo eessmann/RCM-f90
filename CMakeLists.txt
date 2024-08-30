@@ -9,8 +9,8 @@ project(RCM-f90
 
 # Set up install directories
 include(GNUInstallDirs)
-set(INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/rcm-f90")
-set(INSTALL_MODULEDIR "${INSTALL_INCLUDEDIR}/mod")
+set(INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}")
+set(INSTALL_MODULEDIR "${INSTALL_INCLUDEDIR}")
 
 # Include project specific CMake functions
 include(cmake/RCM-f90.cmake)
@@ -19,10 +19,10 @@ include(cmake/RCM-f90.cmake)
 include(config.cmake)
 
 # Configure the build type (see cmake/RCM-f90.cmake)
-configure_build_type()
+rcm_configure_build_type()
 
 # Configure the compiler flags (see cmake/RCM-f90.cmake)
-configure_compiler_flags()
+rcm_configure_compiler_flags()
 
 # Build library
 add_subdirectory(src)

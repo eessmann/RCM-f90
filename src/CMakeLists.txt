@@ -8,6 +8,9 @@ set(rcm-sources
 # Build library
 add_library(rcm-f90 ${rcm-sources})
 
+# Setting Fortran standard, flags, and warnings using target-based approach
+target_link_libraries(rcm-f90 PRIVATE $<BUILD_LOCAL_INTERFACE:rcm_project_options;rcm_project_warnings>)
+
 # Store generated mod-files in a separate folder
 set(moddir "${CMAKE_CURRENT_BINARY_DIR}/mod")
 set_target_properties(rcm-f90 PROPERTIES
