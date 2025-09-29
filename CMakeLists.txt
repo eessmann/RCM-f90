@@ -2,10 +2,14 @@ cmake_minimum_required(VERSION 3.16)
 
 # Set basic project properties
 project(RCM-f90
-    VERSION 0.1
+    VERSION 0.2.0
     DESCRIPTION "RCM f90 is a modified version of the code available at https://people.math.sc.edu/Burkardt/f_src/rcm/rcm.html to facilitate building as a library, released under an LGPL license - see LICENSE."
     LANGUAGES Fortran
 )
+
+include(GNUInstallDirs)
+set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/modules/rcm-90")
+set(rcm_f90_module_install_dir "${CMAKE_INSTALL_LIBDIR}/fortran/${CMAKE_Fortran_COMPILER_ID}-${CMAKE_Fortran_COMPILER_VERSION}")
 
 # Set up install directories
 include(GNUInstallDirs)
@@ -32,41 +36,42 @@ add_subdirectory(src)
 # Install package config find, so that other CMake project can find this project
 #
 include(CMakePackageConfigHelpers)
+set(rcm_f90_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/rcm-f90")
 
-# Add an alias to export library 'rcm-f90' as target RCM-f90::RCM-f90
-add_library(RCM-f90 INTERFACE)
-target_link_libraries(RCM-f90 INTERFACE rcm-f90)
-install(TARGETS RCM-f90 EXPORT rcm-f90-targets)
-
-# If project uses customized finders, they should be installed with it
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rcm-f90
+    TARGETS rcm-f90 rcm_project_options rcm_project_warnings
+    COMPONENT rcm-f90
+    EXPORT rcm-f90-targets
 )
-endif()
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/rcm-f90ConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY ExactVersion
+)
 
 # Install project, add namespace
 install(
     EXPORT rcm-f90-targets
     FILE "rcm-f90-targets.cmake"
     NAMESPACE "RCM-f90::"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/rcm-f90"
+    DESTINATION "${rcm_f90_INSTALL_CONFIGDIR}"
 )
 
 # Create and install CMake package config file
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/export/rcm-f90-config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/rcm-f90-config.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/rcm-f90"
+    "${CMAKE_CURRENT_BINARY_DIR}/rcm-f90-config.cmake"
+    INSTALL_DESTINATION "${rcm_f90_INSTALL_CONFIGDIR}"
 )
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/rcm-f90-config-version.cmake"
-    VERSION "${PROJECT_VERSION}"
-    COMPATIBILITY SameMajorVersion
-)
+
 install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/rcm-f90-config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/rcm-f90-config-version.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/rcm-f90"
+  DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
+  DESTINATION ${rcm_f90_module_install_dir}
+)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/rcm-f90-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/rcm-f90ConfigVersion.cmake"
+  DESTINATION "${rcm_f90_INSTALL_CONFIGDIR}"
 )
